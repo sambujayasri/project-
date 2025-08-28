@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Motivational To-Do List</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px;
+      color: #333;
+    }
+    .container {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      width: 400px;
+      animation: fadeIn 1s ease;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #444;
+    }
+    .quote {
+      text-align: center;
+      font-style: italic;
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #666;
+    }
+    #taskInput {
+      width: 70%;
+      padding: 10px;
+      border: 2px solid #764ba2;
+      border-radius: 10px;
+      outline: none;
+      transition: 0.3s;
+    }
+    #taskInput:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 5px #667eea;
+    }
+    #addBtn, #clearBtn {
+      padding: 10px 16px;
+      margin-left: 5px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    #addBtn:hover, #clearBtn:hover {
+      background: #5a67d8;
+      transform: scale(1.05);
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 15px;
+      margin-bottom: 10px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      transition: 0.3s;
+    }
+    li:hover {
+      background: #f1f1f1;
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+    li.completed span {
+      text-decoration: line-through;
+      color: gray;
+    }
+    li input[type="checkbox"] {
+      transform: scale(1.3);
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    .deleteBtn {
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .deleteBtn:hover {
+      background: #cc0000;
+      transform: rotate(90deg);
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    .footer {
+      text-align: center;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🌟 My To-Do List</h2>
+    <p class="quote" id="quote"></p>
+    <input type="text" id="taskInput" placeholder="Enter a new task...">
+    <button id="addBtn">Add</button>
+    <button id="clearBtn">Clear All</button>
+    <ul id="taskList"></ul>
+    <div class="footer">✔ Stay productive!</div>
+  </div>
+
+  <script>
+    const taskInput = document.getElementById("taskInput");
+    const addBtn = document.getElementById("addBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const taskList = document.getElementById("taskList");
+    const quoteBox = document.getElementById("quote");
+
+    // Motivational quotes
+    const quotes = [
+      "Push yourself, because no one else is going to do it for you.",
+      "Great things never come from comfort zones.",
+      "Dream it. Wish it. Do it.",
+      "Success doesn’t just find you. You have to go out and get it.",
+      "The harder you work for something, the greater you’ll feel when you achieve it.",
+      "Wake up with determination. Go to bed with satisfaction.",
+      "Little things make big days."
+    ];
+    quoteBox.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+    // Load saved tasks
+    window.onload = function() {
+      let savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+      savedTasks.forEach(task => addTask(task.text, task.completed));
+    };
+
+    // Add button click
+    addBtn.addEventListener("click", () => {
+      if (taskInput.value.trim() !== "") {
+        addTask(taskInput.value);
+        taskInput.value = "";
+      }
+    });
+
+    // Enter key also adds task
+    taskInput.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        addBtn.click();
+      }
+    });
+
+    // Clear all tasks
+    clearBtn.addEventListener("click", () => {
+      if (confirm("Are you sure you want to clear all tasks?")) {
+        taskList.innerHTML = "";
+        localStorage.removeItem("tasks");
+      }
+    });
+
+    // Add task function
+    function addTask(taskText, completed = false) {
+      let li = document.createElement("li");
+
+      // checkbox
+      let checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = completed;
+
+      let span = document.createElement("span");
+      span.textContent = taskText;
+
+      if (completed) {
+        li.classList.add("completed");
+      }
+
+      // toggle complete
+      checkbox.addEventListener("change", () => {
+        li.classList.toggle("completed", checkbox.checked);
+        saveTasks();
+      });
+
+      // delete button
+      let delBtn = document.createElement("button");
+      delBtn.textContent = "×";
+      delBtn.className = "deleteBtn";
+      delBtn.addEventListener("click", () => {
+        li.remove();
+        saveTasks();
+      });
+
+      li.appendChild(checkbox);
+      li.appendChild(span);
+      li.appendChild(delBtn);
+      taskList.appendChild(li);
+
+      saveTasks();
+    }
+
+    // Save tasks to localStorage
+    function saveTasks() {
+      let tasks = [];
+      document.querySelectorAll("#taskList li").forEach(li => {
+        tasks.push({
+          text: li.querySelector("span").textContent,
+          completed: li.querySelector("input").checked
+        });
+      });
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+  </script>
+</body>
+</html>
